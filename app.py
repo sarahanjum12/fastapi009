@@ -5,91 +5,76 @@ import pandas as pd
 import google.generativeai as genai
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
-import logging
 
-# Initialize FastAPI app
+# ✅ Initialize FastAPI app
 app = FastAPI()
 
-# Configure Logging
-logging.basicConfig(level=logging.INFO)
-
-# Set up CORS for frontend access (replace "*" with specific domains for security)
+# ✅ Set up CORS to allow frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to ["https://your-frontend.com"] for security
+    allow_origins=["*"],  # Change to specific frontend domain for security
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
-# Set your Gemini API Key
+# ✅ Load Google Gemini API Key (Set this as an environment variable in production)
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAnHJJO-rKHBCkZuRnGXPhf0dJkrKp9BXc"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-# Load CSV Files (Ensure they exist)
-csv_files = ["beneficiary_cost_file.csv", "geo_loc.csv", "plan_info.csv"]
-dfs = []
+# ✅ Load CSV Data
+csv_files = [
+    "beneficiary_cost_file.csv",
+    "geo_loc.csv",
+    "plan_info.csv"
+]
 
-for file in csv_files:
-    if os.path.exists(file):  # Check if file exists before reading
-        try:
-            dfs.append(pd.read_csv(file))
-            logging.info(f"Loaded {file} successfully.")
-        except Exception as e:
-            logging.error(f"Error loading {file}: {str(e)}")
-    else:
-        logging.error(f"File {file} not found. Skipping.")
+try:
+    dfs = [pd.read_csv(file) for file in csv_files]
+    df = pd.concat(dfs, ignore_index=True)
+    summary_stats = df.describe().to_string()  # Generate dataset statistics
+except Exception as e:
+    summary_stats = "Error loading dataset: " + str(e)
 
-# Merge CSV DataFrames
-df = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
-
-# Generate Summary Statistics
-summary_stats = df.describe().to_string() if not df.empty else "No data available."
-
-
-# Pydantic Model for API Request
+# ✅ Pydantic Model for Request Body
 class PromptRequest(BaseModel):
     custom_prompt: Optional[str] = None
 
-
-# Function to Generate Insights with Gemini API
+# ✅ Function to generate insights
 def generate_insights(custom_prompt: Optional[str] = None):
-    if custom_prompt is None:
-        custom_prompt = f"""
-        I have uploaded a dataset. Here are some key statistics:
-        {summary_stats}
-        How many rows are there in the dataset?
-        Based on this, please generate market insights, trends, statistical analysis, and informed decisions.
-        Also, suggest potential actions or improvements.
-        """
-    
-    # Use Gemini API to generate insights
     try:
-        model = genai.GenerativeModel("gemini-pro")  # Use "gemini-1.5-pro" if available
+        if custom_prompt is None:
+            custom_prompt = f"""
+            I have uploaded a dataset. Here are some key statistics:
+            {summary_stats}
+            How many rows are there in the dataset?
+            Based on this, please generate market insights, trends, statistical analysis, and informed decisions.
+            Also, suggest potential actions or improvements.
+            """
+
+        # ✅ Use Gemini API to generate insights
+        model = genai.GenerativeModel("gemini-pro")  
         response = model.generate_content(custom_prompt)
+
         return response.text
     except Exception as e:
-        logging.error(f"Error generating insights: {str(e)}")
-        return "Error generating insights."
+        return f"Error generating insights: {str(e)}"
 
-
-# Root Route - API Status Check
-@app.get("/")
-def read_root():
-    return {"message": "FastAPI is running successfully!"}
-
-
-# API Endpoint to Generate Insights
+# ✅ API Endpoint for Insights Generation
 @app.post("/generate-insights/")
 async def generate_insights_api(request: PromptRequest):
     insights = generate_insights(request.custom_prompt)
     return {"insights": insights}
 
-
-# Simple Test Endpoint
+# ✅ API Endpoint for Submission (Debugging Example)
 @app.post("/submit")
 async def process_data(data: dict):
     text = data.get("text", "")
     if not text:
-        raise HTTPException(status_code=400, detail="Text field is required")
+        raise HTTPException(status_code=400, detail="No text provided")
     return {"result": f"Processed: {text}"}
+
+# ✅ Root API Check
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI is running successfully!"}
