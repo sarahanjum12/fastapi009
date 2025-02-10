@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import google.generativeai as genai
 from typing import Optional
-from fastapi.middleware.cors import CORSMiddleware
+
 # Set up FastAPI app
 app = FastAPI()
 
@@ -23,24 +23,6 @@ df = pd.concat(dfs, ignore_index=True)
 
 # Extract key statistics
 summary_stats = df.describe().to_string()
-
-# Allow requests from your frontend (localhost or any domain)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[""],  # Change "" to specific domains for better security
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.post("/submit")
-async def process_data(data: dict):
-    text = data.get("text", "")
-    result = f"Processed: {text}"
-    return {"result": result}
-# Define Pydantic model for request body
-class PromptRequest(BaseModel):
-    custom_prompt: Optional[str] = None
 
 # Function to generate insights
 def generate_insights(custom_prompt: Optional[str] = None):
@@ -72,4 +54,4 @@ async def generate_insights_api(request: PromptRequest):
 # Example endpoint to check the API status
 @app.get("/")
 def read_root():
-    return {"message": "FastAPI is running!"}
+    return {"message": "FastAPI is running!"} what is the issue it's not working on the website
