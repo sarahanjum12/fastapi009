@@ -14,8 +14,7 @@ genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 # Load CSV files
 csv_files = [
-    "/Users/sarah/Desktop/tier/beneficiary_cost_file.csv", 
-             "/Users/sarah/Desktop/tier/basic_drug_formulary.csv",
+    "/Users/sarah/Desktop/tier/beneficiary_cost_file.csv",
              "/Users/sarah/Desktop/tier/geo_loc.csv",
              "/Users/sarah/Desktop/tier/plan_info.csv"
 ]
