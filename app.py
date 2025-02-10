@@ -1,70 +1,63 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import pandas as pd
 import google.generativeai as genai
 from typing import Optional
 
-# ✅ FastAPI app
+# Set up FastAPI app
 app = FastAPI()
 
-# ✅ Enable CORS
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (important for frontend)
+    allow_origins=["*"],  # Change to specific frontend origin if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Set Gemini API Key
-genai.configure(api_key="AIzaSyAnHJJO-rKHBCkZuRnGXPhf0dJkrKp9BXc")
+# Set your Gemini API Key
+os.environ["GOOGLE_API_KEY"] = "AIzaSyAnHJJO-rKHBCkZuRnGXPhf0dJkrKp9BXc"
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-# ✅ Load CSV files safely
-csv_files = [
-    "beneficiary_cost_file.csv",
-    "geo_loc.csv",
-    "plan_info.csv"
-]
-
-dfs = []
-for file in csv_files:
-    try:
-        df = pd.read_csv(file)
-        dfs.append(df)
-    except FileNotFoundError:
-        print(f"❌ Error: {file} not found!")
-
+# Load CSV files
+csv_files = ["beneficiary_cost_file.csv", "geo_loc.csv", "plan_info.csv"]
+dfs = [pd.read_csv(file) for file in csv_files]
 df = pd.concat(dfs, ignore_index=True)
+
+# Extract key statistics
 summary_stats = df.describe().to_string()
 
-# ✅ Pydantic Model
+# Define Pydantic Model
 class PromptRequest(BaseModel):
     custom_prompt: Optional[str] = None
 
-# ✅ Function to generate insights
+# Function to generate insights
 def generate_insights(custom_prompt: Optional[str] = None):
     if custom_prompt is None:
         custom_prompt = f"""
         I have uploaded a dataset. Here are some key statistics:
         {summary_stats}
-        Based on this, generate market insights, trends, and recommendations.
+        How many rows are there in the dataset?
+        Based on this, please generate market insights, trends, statistical analysis, and informed decisions.
+        Also, suggest potential actions or improvements.
         """
-    
-    prompt = f"{custom_prompt}"
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(prompt)
 
+    # Use Gemini API to generate insights
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(custom_prompt)
+    
     return response.text
 
-# ✅ API Endpoint for Generating Insights
+# API endpoint to generate insights
 @app.post("/generate-insights/")
 async def generate_insights_api(request: PromptRequest):
     insights = generate_insights(request.custom_prompt)
     return {"insights": insights}
 
-# ✅ Root API Check
+# Health Check Endpoint
 @app.get("/")
 def read_root():
     return {"message": "FastAPI is running!"}
