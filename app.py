@@ -14,9 +14,9 @@ genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 # Load CSV files
 csv_files = [
-    "/Users/sarah/Desktop/tier/beneficiary_cost_file.csv",
-             "/Users/sarah/Desktop/tier/geo_loc.csv",
-             "/Users/sarah/Desktop/tier/plan_info.csv"
+    "beneficiary_cost_file.csv",
+             "geo_loc.csv",
+             "plan_info.csv"
 ]
 dfs = [pd.read_csv(file) for file in csv_files]
 df = pd.concat(dfs, ignore_index=True)
