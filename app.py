@@ -18,7 +18,7 @@ app.add_middleware(
 # ✅ Define the Pydantic request model
 class PromptRequest(BaseModel):
     custom_prompt: str  # Ensure the frontend sends this correctly
-
+)
 # ✅ Set up Google Gemini API
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAnHJJO-rKHBCkZuRnGXPhf0dJkrKp9BXc"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
