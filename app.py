@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import google.generativeai as genai
 from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 # FastAPI app
 app = FastAPI()
