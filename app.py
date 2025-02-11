@@ -30,7 +30,7 @@ def generate_insights(custom_prompt: Optional[str] = None):
         I have uploaded a dataset. Here are some key statistics:
         {summary_stats}
         Based on this, please generate market insights, trends, statistical analysis, and informed decisions.
-        Give the answer in normal plain text.
+        Give the answer in normal plain text,without using markdown, bullet points, or bold formatting.
         Also, suggest potential actions or improvements.
         """
 
