@@ -29,8 +29,8 @@ def generate_insights(custom_prompt: Optional[str] = None):
         custom_prompt = f"""
         I have uploaded a dataset. Here are some key statistics:
         {summary_stats}
-        How many rows are there in the dataset?
         Based on this, please generate market insights, trends, statistical analysis, and informed decisions.
+        Give the answer in normal plain text.
         Also, suggest potential actions or improvements.
         """
 
