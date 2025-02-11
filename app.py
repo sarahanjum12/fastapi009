@@ -9,6 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 # FastAPI app
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to specific domains in production
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 # ✅ Define the Pydantic request model
 class PromptRequest(BaseModel):
     custom_prompt: str  # Ensure the frontend sends this correctly
